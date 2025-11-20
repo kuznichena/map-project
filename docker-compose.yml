@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: database
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "mydatabase"
+    volumes:
+      - pgdata:/var/lib/postgresql 
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mydatabase"]
+      interval: 5s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+
+  server:
+    container_name: server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      PGHOST: "postgres"            
+      PGUSER: "postgres"
+      PGPASSWORD: "postgres"
+      PGDATABASE: "mydatabase"
+      PGPORT: "5432"
+      PORT: "5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  client:
+    container_name: client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "4173:4173"
+    depends_on:
+      - server
+
+volumes:
+  pgdata:
