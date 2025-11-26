@@ -39,7 +39,7 @@ function App() {
             <li key={doc.id}>
               <a
                 href={doc.url}
-                className="text-blue-600 hover:underline"
+                className="text-yellow-600 hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
