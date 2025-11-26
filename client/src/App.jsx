@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import ArcGISMap from "./components/ArcGISMap";
+import DocumentMap from "./pages/DocumentMap";
 
 function App() {
   const [docs, setDocs] = useState([]);
@@ -17,48 +19,73 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Navbar */}
-      <header className="bg-blue-600 text-white p-4">
-        <nav className="container mx-auto flex justify-between">
-          <h1 className="text-lg font-semibold">Mini Test App</h1>
-          <button
-            onClick={fetchDocuments}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
-          >
-            Show the list of documents
-          </button>
-        </nav>
-      </header>
+    <Router>
+      <div className="min-h-screen bg-gray-100 flex flex-col">
+        {/* Navbar */}
+        <header className="bg-blue-600 text-white p-4">
+          <nav className="container mx-auto flex justify-between items-center">
+            <Link to="/" className="text-lg font-semibold">
+              Mini Test App
+            </Link>
 
-      {/* Content */}
-      <main className="container mx-auto flex-grow p-4">
-        <h2 className="text-xl font-bold mb-4">List of documents:</h2>
-        <ul className="list-disc list-inside bg-white p-4 rounded shadow">
-          {docs.map((doc) => (
-            <li key={doc.id}>
-              <a
-                href={doc.url}
-                className="text-yellow-600 hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
+            <div className="flex gap-4">
+              <button
+                onClick={fetchDocuments}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
               >
-                {doc.title}
-              </a>
-            </li>
-          ))}
-          {docs.length === 0 && <li>There are no documents.</li>}
-        </ul>
+                Show the list of documents
+              </button>
 
-        <div className="p-4 flex-grow flex flex-col">
-          <h1 className="text-xl mb-4">ArcGISMap</h1>
+              <Link
+                to="/second"
+                className="bg-green-500 hover:bg-green-700 text-white font-medium py-2 px-4 rounded"
+              >
+                Document Map
+              </Link>
+            </div>
+          </nav>
+        </header>
 
-          <div className="flex-grow h-0">
-            <ArcGISMap />
-          </div>
-        </div>
-      </main>
-    </div>
+        {/* Router content */}
+        <main className="container mx-auto flex-grow p-4">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <h2 className="text-xl font-bold mb-4">List of documents:</h2>
+                  <ul className="list-disc list-inside bg-white p-4 rounded shadow">
+                    {docs.map((doc) => (
+                      <li key={doc.id}>
+                        <a
+                          href={doc.url}
+                          className="text-yellow-600 hover:underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {doc.title}
+                        </a>
+                      </li>
+                    ))}
+                    {docs.length === 0 && <li>There are no documents.</li>}
+                  </ul>
+
+                  <div className="p-4">
+                    <h1 className="text-xl mb-4">ArcGISMap</h1>
+
+                    <div className="h-[600px]">
+                      <ArcGISMap />
+                    </div>
+                  </div>
+                </>
+              }
+            />
+
+            <Route path="/second" element={<DocumentMap />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
 }
 

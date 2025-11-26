@@ -1,38 +1,53 @@
+// src/components/ArcGISMap.jsx
 import { useEffect, useRef } from "react";
-import { loadModules } from "esri-loader";
+import Map from "@arcgis/core/Map";
+import MapView from "@arcgis/core/views/MapView";
+import MapImageLayer from "@arcgis/core/layers/MapImageLayer";
 
-export default function ArcGISMap() {
-  const mapRef = useRef();
+function ArcGISMap() {
+  const mapDiv = useRef(null);
 
   useEffect(() => {
-    let view;
+    if (!mapDiv.current) return;
+    const map = new Map({
+      basemap: "osm",
+    });
 
-    loadModules([
-      "esri/Map",
-      "esri/views/MapView"
-    ], { css: true }).then(([ArcGISMap, MapView]) => {
-      const map = new ArcGISMap({
-        basemap: "topo-vector"
-      });
+    const dktkLayer = new MapImageLayer({
+      url: "https://ifzo-gis.geo.uni-greifswald.de/server/rest/services/DKTK100/dktk100/MapServer",
+      opacity: 0.9,         
+    });
 
-      view = new MapView({
-        container: mapRef.current,
-        map: map,
-        center: [13.3777, 54.0934],
-        zoom: 13
-      });
+    map.add(dktkLayer);
 
+    const view = new MapView({
+      container: mapDiv.current,
+      map,
+      center: [12.0, 56.1], 
+      zoom: 9,
+      constraints: {
+        minZoom: 6,
+        maxZoom: 15,
+      },
+    });
+
+    dktkLayer.when(() => {
+      console.log("DKTK layer loaded");
+    }).catch((err) => {
+      console.error("DKTK layer failed to load:", err);
     });
 
     return () => {
-      if (view) {
-        view.destroy();
-        view = null;
-      }
+      view.destroy();
     };
   }, []);
 
   return (
-    <div className="w-full h-[700px]" ref={mapRef}></div>
+    <div
+      ref={mapDiv}
+      className="w-full h-full rounded shadow"
+    />
   );
 }
+
+export default ArcGISMap;
