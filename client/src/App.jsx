@@ -25,7 +25,7 @@ function App() {
         <header className="bg-blue-600 text-white p-4">
           <nav className="container mx-auto flex justify-between items-center">
             <Link to="/" className="text-lg font-semibold">
-              Mini Test App
+              Test App
             </Link>
 
             <div className="flex gap-4">
@@ -33,7 +33,7 @@ function App() {
                 onClick={fetchDocuments}
                 className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
               >
-                Show the list of documents
+                Database Test
               </button>
 
               <Link
