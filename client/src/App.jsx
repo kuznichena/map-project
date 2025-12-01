@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import ArcGISMap from "./components/ArcGISMap";
 import DocumentMap from "./pages/DocumentMap";
+import HistoricalMap from "./pages/HistoricalMap";
 
 function App() {
   const [docs, setDocs] = useState([]);
@@ -41,6 +42,12 @@ function App() {
                 className="bg-green-500 hover:bg-green-700 text-white font-medium py-2 px-4 rounded"
               >
                 Document Map
+              </Link>
+              <Link
+                to="/historical-map"
+                className="bg-purple-500 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded"
+              >
+                Historical Map
               </Link>
             </div>
           </nav>
@@ -82,6 +89,7 @@ function App() {
             />
 
             <Route path="/second" element={<DocumentMap />} />
+            <Route path="/historical-map" element={<HistoricalMap />} />
           </Routes>
         </main>
       </div>
