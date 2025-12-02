@@ -4,7 +4,6 @@ import DocumentMapView from "../components/DocumentMapView";
 
 export default function DocumentMap() {
   const [selectedSheets, setSelectedSheets] = useState([]);
-
   const [hoveredObjectId, setHoveredObjectId] = useState(null);
   const [activeObjectId, setActiveObjectId] = useState(null);
 
@@ -47,6 +46,9 @@ export default function DocumentMap() {
                 : "bg-white border-gray-200"
             }`;
 
+            // грузим PNG только для активной карты
+            const showPreview = isActive;
+
             return (
               <li
                 key={sheet.id}
@@ -58,9 +60,11 @@ export default function DocumentMap() {
                 }}
                 onMouseLeave={() => setHoveredObjectId(null)}
                 onClick={() => {
-                  if (sheet.objectId != null) {
-                    setActiveObjectId(sheet.objectId);
-                  }
+                  if (sheet.objectId == null) return;
+                  // клик по активной карточке выключает её
+                  setActiveObjectId((prev) =>
+                    prev === sheet.objectId ? null : sheet.objectId
+                  );
                 }}
               >
                 <div className="font-medium mb-1">
@@ -75,21 +79,31 @@ export default function DocumentMap() {
 
                 {sheet.imageUrl ? (
                   <>
-                    <img
-                      src={sheet.imageUrl}
-                      alt={sheet.title || sheet.signature || "historic map"}
-                      loading="lazy"
-                      className="w-full rounded border object-contain max-h-64"
-                    />
-                    <a
-                      href={sheet.imageUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1 text-xs text-blue-600 underline inline-block"
-                      onClick={(e) => e.stopPropagation()} // чтобы клик по ссылке не менял active
-                    >
-                      Open full image
-                    </a>
+                    {showPreview ? (
+                      <>
+                        <img
+                          src={sheet.imageUrl}
+                          alt={
+                            sheet.title || sheet.signature || "historic map"
+                          }
+                          loading="lazy"
+                          className="w-full rounded border object-contain max-h-64"
+                        />
+                        <a
+                          href={sheet.imageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 text-xs text-blue-600 underline inline-block"
+                          onClick={(e) => e.stopPropagation()} // не менять активную при открытии в новой вкладке
+                        >
+                          Open full image
+                        </a>
+                      </>
+                    ) : (
+                      <p className="mt-1 text-xs text-blue-600">
+                        Click card to load preview
+                      </p>
+                    )}
                   </>
                 ) : (
                   <p className="text-xs text-gray-500">

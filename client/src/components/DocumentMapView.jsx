@@ -9,10 +9,11 @@ const IMAGE_BASE_URL = "https://dhm.uni-greifswald.de/pngMaps";
 function DocumentMapView({ onSheetsSelected, hoveredObjectId, activeObjectId }) {
   const mapDiv = useRef(null);
 
+  const viewRef = useRef(null);
+  const layerRef = useRef(null);
   const layerViewRef = useRef(null);
   const highlightHandleRef = useRef(null);
-  // store last clicked graphics
-  const selectedGraphicsRef = useRef([]);
+  const selectedGraphicsRef = useRef([]); // graphics последнего клика
 
   // helper: highlight specified graphics
   const setHighlightForGraphics = (graphics) => {
@@ -28,11 +29,12 @@ function DocumentMapView({ onSheetsSelected, hoveredObjectId, activeObjectId }) 
     }
   };
 
+  // 1) создаём карту, слой и view ОДИН раз
   useEffect(() => {
     if (!mapDiv.current) return;
 
     const map = new Map({
-      basemap: "osm",
+      basemap: "streets-vector", // стабильнее, чем osm
     });
 
     const layer = new FeatureLayer({
@@ -49,6 +51,9 @@ function DocumentMapView({ onSheetsSelected, hoveredObjectId, activeObjectId }) 
       center: [13.38, 54.09],
       zoom: 11,
     });
+
+    viewRef.current = view;
+    layerRef.current = layer;
 
     view.whenLayerView(layer).then((layerView) => {
       layerViewRef.current = layerView;
@@ -69,12 +74,13 @@ function DocumentMapView({ onSheetsSelected, hoveredObjectId, activeObjectId }) 
           return;
         }
 
-        // save graphics for later hover/active logic
+        // запоминаем все graphics под кликом
         selectedGraphicsRef.current = graphics;
 
-        // highlight all selected
+        // подсветить все области
         setHighlightForGraphics(graphics);
 
+        // можно убрать goTo, если мешает
         const firstGeom = graphics[0].geometry;
         if (firstGeom) {
           view.goTo(firstGeom.extent.expand(1.2)).catch(() => {});
@@ -84,7 +90,6 @@ function DocumentMapView({ onSheetsSelected, hoveredObjectId, activeObjectId }) 
           const attrs = g.attributes || {};
           const signature = attrs.signatur;
 
-          // robust objectId detection (inдекс поля может отличаться)
           const objectId =
             attrs.OBJECTID ??
             attrs.objectid ??
@@ -123,26 +128,27 @@ function DocumentMapView({ onSheetsSelected, hoveredObjectId, activeObjectId }) 
       }
       view.destroy();
     };
-  }, []); // создаём карту только один раз
+  }, []); // <--- ВАЖНО: пустой массив, карта не пересоздаётся
 
-  // react to hovered/active card
+  // 2) реагируем на hover / active из правой панели
   useEffect(() => {
     const graphics = selectedGraphicsRef.current;
     if (!graphics || graphics.length === 0) return;
 
-    // pick which graphics to highlight:
     let toHighlight = graphics;
 
     if (hoveredObjectId != null) {
       const g = graphics.find(
-        (gr) => (gr.attributes?.OBJECTID ?? gr.attributes?.fid) === hoveredObjectId
+        (gr) =>
+          (gr.attributes?.OBJECTID ?? gr.attributes?.fid) === hoveredObjectId
       );
       if (g) {
         toHighlight = [g];
       }
     } else if (activeObjectId != null) {
       const g = graphics.find(
-        (gr) => (gr.attributes?.OBJECTID ?? gr.attributes?.fid) === activeObjectId
+        (gr) =>
+          (gr.attributes?.OBJECTID ?? gr.attributes?.fid) === activeObjectId
       );
       if (g) {
         toHighlight = [g];
